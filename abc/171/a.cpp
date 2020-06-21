@@ -13,9 +13,14 @@ template<class T>bool chmax(T &a, const T &b) { if (a<b) { a=b; return true; } r
 typedef long long ll;
 
 void solve() {
-    string s;
-    cin >> s;
-    cout << s << endl;
+    REP(i,5) {
+        int x;
+        cin >> x;
+        if(!x) {
+            cout << i+1 << endl;
+            return;
+        }
+    }
 }
 
 int main() {

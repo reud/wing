@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONTEST_NAME="abc170"
+CONTEST_NAME=###CONTEST_NAME###
 QUESTION_ID=a
 
 g++ ${QUESTION_ID}.cpp -o  ${QUESTION_ID}.out
