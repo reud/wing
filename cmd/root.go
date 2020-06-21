@@ -28,7 +28,7 @@ import (
 
 var cfgFile string
 
-func writeCMakeList(contest string,number string,cnt int) {
+func writeCMakeList(contest string, number string, cnt int) {
 	//os.O_RDWRを渡しているので、同時に読み込みも可能
 	file, err := os.OpenFile("test.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
@@ -36,46 +36,30 @@ func writeCMakeList(contest string,number string,cnt int) {
 		log.Fatal(err)
 	}
 	defer file.Close()
-	fmt.Fprintln(file, fmt.Sprintf("# Contest %+v %+v",contest,number)) //書き込み
-	for i:=0 ; i < cnt ; i++ {
-		fmt.Fprintln(file, fmt.Sprintf("add_executable(%+v-%+v_%+v %+v/%+v/%+v.cpp)",contest,number,string(rune('a'+i)),contest,number,string(rune('a'+i)))) //書き込み
+	fmt.Fprintln(file, fmt.Sprintf("# Contest %+v %+v", contest, number)) //書き込み
+	for i := 0; i < cnt; i++ {
+		fmt.Fprintln(file, fmt.Sprintf("add_executable(%+v-%+v_%+v %+v/%+v/%+v.cpp)", contest, number, string(rune('a'+i)), contest, number, string(rune('a'+i)))) //書き込み
 	}
 }
 
-func writeCodeFiles(contest string,number string,cnt int,template []byte) {
-	for i:=0 ; i < cnt ; i++ {
-		fn := fmt.Sprintf("%+v/%+v/%+v.cpp",contest,number,string(rune('a'+i)))
-		if err := ioutil.WriteFile(fn,template,0666) ; err != nil {
-			fmt.Printf("%+v",err)
+func writeCodeFiles(contest string, number string, cnt int, template []byte) {
+	for i := 0; i < cnt; i++ {
+		fn := fmt.Sprintf("%+v/%+v/%+v.cpp", contest, number, string(rune('a'+i)))
+		if err := ioutil.WriteFile(fn, template, 0666); err != nil {
+			fmt.Printf("%+v", err)
 		}
 	}
 }
-
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "wing",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "定期コンテストのクリエイトを行えます。",
+	Long:  `定期コンテストのクリエイトを行います。第一引数はコンテスト名のlowercaseで第二引数は開催番号です。`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		contest := args[0]
-		number := args[1]
-		if err := os.MkdirAll(fmt.Sprintf("%+v/%+v",contest,number), 0777); err != nil {
-			fmt.Println(err)
-		}
-		b, err := ioutil.ReadFile("cpp.template")
-		if err != nil {
-			panic(err)
-		}
-		writeCMakeList(contest,number,6)
-		writeCodeFiles(contest,number,6,b)
+		// not root
 	},
 }
 
