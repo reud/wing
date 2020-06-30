@@ -1,0 +1,20 @@
+#!/bin/bash
+
+URL=will_written
+QUESTION_ID=1
+
+set_url () {
+  case "${QUESTION_ID}" in
+###INJECT_CASES###
+  * ) echo "INVALID_ID" ;;
+  esac
+}
+
+## 解答ファイル.cppの名前(拡張子抜き)
+set_url
+
+g++ ${QUESTION_ID}.cpp -o  ${QUESTION_ID}.out
+
+oj d ${URL} -d ${QUESTION_ID}
+oj t -d ${QUESTION_ID} -c ./${QUESTION_ID}.out
+

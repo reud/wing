@@ -16,6 +16,7 @@ limitations under the License.
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"github.com/reud/wing/common"
 	"io/ioutil"
@@ -26,33 +27,37 @@ import (
 
 // createCmd represents the create command
 var createCmd = &cobra.Command{
-	Use:   "create",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:   "create [ContestName] [ContestNumber]",
+	Short: "常設コンテスト(ABC,ARC,AGC)向けコマンド",
+	Long: `wing create <コンテスト名> <コンテスト番号> でコンテストを作成することができます。作成場所は <コンテスト名>/<コンテスト番号>です。
+このコマンドにはサンプル取得用のURLが含まれます。
+	`,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(common.TemplateShellFileName) == 0 {
+			common.TemplateShellFileName = "debugger.sh.template"
+		}
+		if len(args) != 2 {
+			return errors.New("引数の形式が不正です。　sample: wing create abc 170\n")
+		}
+		return nil
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		contest := args[0]
 		number := args[1]
 		if err := os.MkdirAll(fmt.Sprintf("%+v/%+v", contest, number), 0777); err != nil {
 			fmt.Println(err)
 		}
-		b, err := ioutil.ReadFile("cpp.template")
-		if err != nil {
-			panic(err)
-		}
-		writeCMakeList(contest, number, 6)
-		writeCodeFiles(contest, number, 6, b)
+		b := common.GetBinaryFromFile(common.TemplateCppFileName)
 
-		b, err = ioutil.ReadFile("debugger.sh.template")
+		common.WriteContestCMakeList(contest, number, 6)
+		common.WriteCodeFiles(contest, number, 6, b)
+
+		b, err := ioutil.ReadFile(common.TemplateShellFileName)
 		if err != nil {
 			panic(err)
 		}
 		cn := fmt.Sprintf("%+v%+v", contest, number)
-		b = common.BinaryReplace(b, cn)
+		b = common.BinaryReplace(b, "###CONTEST_NAME###", cn)
 		path := fmt.Sprintf("%+v/%+v/debugger.sh", contest, number)
 		if err := common.WriteFile(path, b); err != nil {
 			panic(err)
@@ -61,6 +66,7 @@ to quickly create a Cobra application.`,
 }
 
 func init() {
+	createCmd.Flags().StringVar(&common.TemplateShellFileName, "shell", "debugger.sh.template", "shellテンプレートファイルの名前を設定します。")
 	rootCmd.AddCommand(createCmd)
 
 	// Here you will define your flags and configuration settings.

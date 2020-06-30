@@ -17,9 +17,8 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/reud/wing/common"
 	"github.com/spf13/cobra"
-	"io/ioutil"
-	"log"
 	"os"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -28,28 +27,9 @@ import (
 
 var cfgFile string
 
-func writeCMakeList(contest string, number string, cnt int) {
-	//os.O_RDWRを渡しているので、同時に読み込みも可能
-	file, err := os.OpenFile("test.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		//エラー処理
-		log.Fatal(err)
-	}
-	defer file.Close()
-	fmt.Fprintln(file, fmt.Sprintf("# Contest %+v %+v", contest, number)) //書き込み
-	for i := 0; i < cnt; i++ {
-		fmt.Fprintln(file, fmt.Sprintf("add_executable(%+v-%+v_%+v %+v/%+v/%+v.cpp)", contest, number, string(rune('a'+i)), contest, number, string(rune('a'+i)))) //書き込み
-	}
-}
-
-func writeCodeFiles(contest string, number string, cnt int, template []byte) {
-	for i := 0; i < cnt; i++ {
-		fn := fmt.Sprintf("%+v/%+v/%+v.cpp", contest, number, string(rune('a'+i)))
-		if err := ioutil.WriteFile(fn, template, 0666); err != nil {
-			fmt.Printf("%+v", err)
-		}
-	}
-}
+var (
+	toggle bool
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -79,11 +59,16 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.wing.yaml)")
+	rootCmd.PersistentFlags().IntVarP(&common.Number, "number", "n", 6, "問題数を設定します。")
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// フラグの値を変数にセットする場合
+	// 第1引数: 変数のポインタ
+	// 第2引数: フラグ名
+	// 第3引数: デフォルト値
+	// 第4引数: 説明
+	rootCmd.PersistentFlags().StringVar(&common.TemplateCppFileName, "cpp", "cpp.template", "cppテンプレートファイルの名前を設定します。")
+	rootCmd.PersistentFlags().StringVar(&common.TemplateShellFileName, "shell", "", "shellテンプレートファイルの名前を設定します。 (default virtual.sh.template (if virtual command)or debugger.sh.template)")
+
 }
 
 // initConfig reads in config file and ENV variables if set.

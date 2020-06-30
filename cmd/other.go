@@ -18,6 +18,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/reud/wing/common"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"os"
@@ -25,27 +26,44 @@ import (
 
 // otherCmd represents the other command
 var otherCmd = &cobra.Command{
-	Use:   "other",
+	Use:   "other [contestName]",
 	Short: "企業コンとか作る時に使うやつ",
 	Long:  `企業コンとか作る時に使うやつ`,
-	Run: func(cmd *cobra.Command, args []string) {
-		contest := args[0]
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(common.TemplateShellFileName) == 0 {
+			common.TemplateShellFileName = "debugger.sh.template"
+		}
 		if len(args) != 1 {
 			panic(errors.New("bad args"))
 		}
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		contest := args[0]
 		if err := os.MkdirAll(fmt.Sprintf("others/%+v", contest), 0777); err != nil {
 			fmt.Println(err)
 		}
-		b, err := ioutil.ReadFile("cpp.template")
+		b, err := ioutil.ReadFile(common.TemplateCppFileName)
 		if err != nil {
 			panic(err)
 		}
-		writeCMakeList("others", contest, 6)
-		writeCodeFiles("others", contest, 6, b)
+		common.WriteContestCMakeList("others", contest, 6)
+		common.WriteCodeFiles("others", contest, 6, b)
+
+		b, err = ioutil.ReadFile(common.TemplateShellFileName)
+		if err != nil {
+			panic(err)
+		}
+		b = common.BinaryReplace(b, "###CONTEST_NAME###", contest)
+		path := fmt.Sprintf("%+v/%+v/debugger.sh", "others", contest)
+		if err := common.WriteFile(path, b); err != nil {
+			panic(err)
+		}
 	},
 }
 
 func init() {
+	otherCmd.Flags().StringVar(&common.TemplateShellFileName, "shell", "", "shellテンプレートファイルの名前を設定します。")
 	rootCmd.AddCommand(otherCmd)
 
 	// Here you will define your flags and configuration settings.
